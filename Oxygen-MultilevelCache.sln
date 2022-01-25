@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oxygen-MultilevelCache", "Oxygen-MultilevelCache\Oxygen-MultilevelCache.csproj", "{1588C5D9-8973-4E73-AECE-8F082FE696BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oxygen-MultilevelCache", "Oxygen-MultilevelCache\Oxygen-MultilevelCache.csproj", "{13B4D079-FDEA-4370-8A98-F5037E982FAD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1588C5D9-8973-4E73-AECE-8F082FE696BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1588C5D9-8973-4E73-AECE-8F082FE696BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1588C5D9-8973-4E73-AECE-8F082FE696BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1588C5D9-8973-4E73-AECE-8F082FE696BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13B4D079-FDEA-4370-8A98-F5037E982FAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13B4D079-FDEA-4370-8A98-F5037E982FAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13B4D079-FDEA-4370-8A98-F5037E982FAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13B4D079-FDEA-4370-8A98-F5037E982FAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
