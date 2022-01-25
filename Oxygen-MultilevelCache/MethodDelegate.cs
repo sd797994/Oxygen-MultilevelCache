@@ -36,16 +36,16 @@ namespace Oxygen.MulitlevelCache
                     //创建一个线程中断器
                     var reset = new AutoResetEvent(false);
                     //创建一个同步对象用于接收L2线程回调的数据
-                    var realResult = new AsyncLocal<TaskTOut>();
+                    var realResult = new TaskCompletionSource<TaskTOut>();
                     //创建一个任务并设置取消token
                     var cancelSource = new CancellationTokenSource();
-                    var task = Task.Run(()=>L2.GetAsync<TaskTOut>(CacheKey), cancelSource.Token);
+                    var task = Task.Run(() => L2.GetAsync<TaskTOut>(CacheKey), cancelSource.Token);
                     //启动任务
                     task.ContinueWith(t =>
                     {
                         if (t.Exception == null)
                             //如果任务顺利回调，则写缓存并阻止中断器
-                            realResult.Value = t.Result;
+                            realResult.SetResult(t.Result);
                         reset.Set();
                     });
                     //如果设置了超时等待，则等待超时后取消任务并阻止中断器
@@ -56,7 +56,7 @@ namespace Oxygen.MulitlevelCache
                         });
                     //中断器开始中断当前线程并监听阻止信号
                     reset.WaitOne();
-                    cacheResult = realResult.Value;
+                    cacheResult = realResult.Task.Result;
                     if (cacheResult == null)
                         return default;
                     else
