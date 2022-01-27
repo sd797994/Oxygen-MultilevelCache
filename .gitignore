@@ -12,3 +12,4 @@ Release
 obj
 *.user
 /nugetpack
+/simple/BenchmarkDotNet.Artifacts

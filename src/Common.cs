@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Oxygen.MulitlevelCache
 {
-    internal class Common
+    public class Common
     {
         internal static Dictionary<MethodInfo, SystemCachedAttribute> systemCachedAttrDir = new Dictionary<MethodInfo, SystemCachedAttribute>();
         static Lazy<IEnumerable<Assembly>> Assemblies = new Lazy<IEnumerable<Assembly>>(() => DependencyContext.Default.CompileLibraries.Where(lib => !lib.Serviceable && lib.Type != "package" && lib.Type != "referenceassembly").Select(lib => AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(lib.Name))));
@@ -17,6 +17,10 @@ namespace Oxygen.MulitlevelCache
             if (ServiceProvider.Value == null)
                 throw new ArgumentNullException();
             return ServiceProvider.Value.GetService<T>() ?? default;
+        }
+        public static void SetServiceProvider(IServiceProvider serviceProvider)
+        {
+            ServiceProvider.Value = serviceProvider;
         }
         /// <summary>
         /// 将包含SystemCachedAttribute服务注册成为代理

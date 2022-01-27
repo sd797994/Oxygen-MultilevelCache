@@ -26,7 +26,8 @@ namespace Oxygen.MulitlevelCache
                 //将实现注入容器
                 services.AddScoped(x.tImpl);
                 //为接口注入代理
-                services.AddScoped(x.tInterface, y => Common.DispatchProxyCreate(x.tInterface, x.tImpl));
+                var proxy = Common.DispatchProxyCreate(x.tInterface, x.tImpl);
+                services.AddScoped(x.tInterface, y => proxy);
             });
         }
 
