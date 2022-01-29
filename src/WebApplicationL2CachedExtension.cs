@@ -11,6 +11,7 @@ namespace Oxygen.MulitlevelCache
             //注入多级缓存实现
             services.AddSingleton<IL1CacheServiceFactory, L1Cache>();
             services.AddSingleton<IL2CacheServiceFactory, L2Cache>();
+            services.AddHostedService<CachedHostedService>();
             //为所有注解方法的类型注入代理
             Common.GetSystemCachedAttributeService().ForEach(x =>
             {
@@ -19,7 +20,7 @@ namespace Oxygen.MulitlevelCache
                 cacheMethods.ForEach(x => {
                     //将方法和注解以kv的形式保存，避免使用时反射
                     if (x.GetCustomAttribute<SystemCachedAttribute>() != null)
-                        Common.systemCachedAttrDir.Add(x, x.GetCustomAttribute<SystemCachedAttribute>());
+                        Common.SetCachedAttrDir(x, x.GetCustomAttribute<SystemCachedAttribute>());
                     //为实现的缓存方法注入委托
                     DelegateBuilder.CreateDelegate(x);
                 });
@@ -29,12 +30,6 @@ namespace Oxygen.MulitlevelCache
                 var proxy = Common.DispatchProxyCreate(x.tInterface, x.tImpl);
                 services.AddScoped(x.tInterface, y => proxy);
             });
-        }
-
-        public static void UseCached(this IApplicationBuilder builder)
-        {
-            //注入中间件用于获取HttpContext的IOC容器
-            builder.UseMiddleware<CachedMiddware>();
         }
     }
 }

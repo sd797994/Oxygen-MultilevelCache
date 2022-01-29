@@ -5,7 +5,7 @@ namespace Oxygen.MulitlevelCache
     internal class MethodDelegate<Tobj, Tout, TaskTOut> : IMethodDelegate where Tout : class where TaskTOut : class
     {
         static AutoResetEvent autoCacheResetEvent = new AutoResetEvent(false);
-        static AutoResetEvent autoSvcResetEvent = new AutoResetEvent(false);
+        static SemaphoreSlim autoSemSlim = new SemaphoreSlim(1);
         private IL1CacheServiceFactory L1;
         private IL2CacheServiceFactory L2;
         private Tobj Service;
@@ -20,7 +20,7 @@ namespace Oxygen.MulitlevelCache
             IsTaskMethod = typeof(Tout) != typeof(TaskTOut);
             MethodFunCall = DelegateBuilder.CreateMethodDelegate<Tobj, Tout>(method);
             //获取方法缓存配置
-            CachedAttr = Common.systemCachedAttrDir.ContainsKey(method) ? Common.systemCachedAttrDir[method] : default;
+            CachedAttr = Common.GetCachedAttrDir(method);
 
         }
         TaskTOut? TryGetCache(MethodInfo methodInfo, object?[]? args)
@@ -44,16 +44,22 @@ namespace Oxygen.MulitlevelCache
                     //启动任务
                     task.ContinueWith(t =>
                     {
-                        if (t.Exception == null)
-                            //如果任务顺利回调，则写缓存并阻止中断器
-                            realResult.SetResult(t.Result);
-                        autoCacheResetEvent.Set();
+                        if (!cancelSource.Token.IsCancellationRequested)
+                        {
+                            if (t.Exception == null)
+                                //如果任务顺利回调，则写缓存并阻止中断器
+                                realResult.SetResult(t.Result);
+                            autoCacheResetEvent.Set();
+                        }
                     });
                     //如果设置了超时等待，则等待超时后取消任务并阻止中断器
                     if (CachedAttr.TimeOutMillisecond > 0)
-                        Task.Delay(CachedAttr.TimeOutMillisecond).ContinueWith(t => {
-                            autoCacheResetEvent.Set(); 
-                            cancelSource.Cancel(); 
+                        Task.Delay(CachedAttr.TimeOutMillisecond).ContinueWith(t =>
+                        {
+                            autoCacheResetEvent.Set();
+                            cancelSource.Cancel();
+                            if (!task.IsCompleted)
+                                realResult.SetResult(default);
                         });
                     //中断器开始中断当前线程并监听阻止信号
                     autoCacheResetEvent.WaitOne();
@@ -94,28 +100,47 @@ namespace Oxygen.MulitlevelCache
             LoadCacheSerivice();
             //调用缓存
             var realResult = new TaskCompletionSource<Tout>();
-            Task.Run(() => TryGetCache(Method, args)).ContinueWith(async task =>
+            if (CachedAttr.SyncVisit)
             {
-                if (task.Exception == null)
+                Task.Run(() =>
                 {
-                    var cacheResult = await (task as Task<TaskTOut>);
-                    //如果任务顺利回调，则写缓存并阻止中断器
-                    if (cacheResult == null)
+                    autoSemSlim.Wait();
+                    var cache = TryGetCache(Method, args);
+                    return cache;
+                }).ContinueWith(async task =>
+                {
+                    if (task.Exception == null)
                     {
-                        var serviceResult = await Task.Run(() => MethodFunCall(Service, args));
-                        if (serviceResult != null)
-                            await SetCache(serviceResult);
-                        realResult.SetResult(serviceResult);
+                        var cacheResult = await (task as Task<TaskTOut>);
+                        //如果任务顺利回调，则写缓存并停止等待
+                        if (cacheResult == null)
+                        {
+                            var serviceResult = await Task.Run(() => MethodFunCall(Service, args));
+                            if (serviceResult != null)
+                                await SetCache(serviceResult);
+                            realResult.SetResult(serviceResult);
+                        }
+                        else
+                        {
+                            realResult.SetResult(IsTaskMethod ? task as Tout : task.Result as Tout);
+                        }
                     }
-                    else
-                    {
-                        realResult.SetResult(IsTaskMethod ? task as Tout : task.Result as Tout);
-                    }
+                    autoSemSlim.Release();
+                });
+                return realResult.Task.Result;
+            }
+            else
+            {
+                var cacheResult = TryGetCache(Method, args);
+                if (cacheResult != null)
+                    return IsTaskMethod ? Task.FromResult(cacheResult) : cacheResult;
+                else
+                {
+                    var task = MethodFunCall(Service, args);
+                    _ = SetCache(task);
+                    return task;
                 }
-                autoSvcResetEvent.Set();
-            });
-            autoSvcResetEvent.WaitOne();
-            return realResult.Task.Result;
+            }
         }
         void LoadCacheSerivice()
         {
