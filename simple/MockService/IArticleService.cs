@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Infrastructure.EfDataAccess;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,9 +8,15 @@ using System.Threading.Tasks;
 namespace AppSimple.MockService
 {
 
-    internal interface IArticleService
+    public interface IArticleService
     {
-        string GetUserArticleTitle(string username);
-        Task<string> GetUserArticleTitleAsync(string username);
+        Article GetArticleById(Article article);
+        Task<Article> GetArticleByIdAsync(Article article);
+        List<Article> GetAllArticle();
+        Task<List<Article>> GetAllArticleAsync();
+        Article GetCacheArticleById(Article article);
+        Task<Article> GetCacheArticleByIdAsync(Article article);
+        List<Article> GetCacheAllArticle();
+        Task<List<Article>> GetCacheAllArticleAsync();
     }
 }

@@ -1,8 +1,6 @@
 ﻿using AppSimple;
 #if DEBUG
-await BenchmarkTest.Debug();
-Console.WriteLine("excuting...");
-Console.ReadKey();
+await AppSimple.WebHostBuilder.Run();
 #else
 BenchmarkTest.Run();
 #endif

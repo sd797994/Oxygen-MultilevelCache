@@ -22,7 +22,6 @@ namespace Oxygen.MulitlevelCache
             MethodFunCall = DelegateBuilder.CreateMethodDelegate<Tobj, Tout>(method);
             //获取方法缓存配置
             CachedAttr = Common.GetCachedAttrDir(method);
-
         }
         TaskTOut TryGetCache(MethodInfo methodInfo, object[] args)
         {
@@ -91,13 +90,13 @@ namespace Oxygen.MulitlevelCache
         }
         public object Excute(object[] args)
         {
+            var servicePorivder = Common.GetServiceProvider();
             //注入需要的构造函数和需要调用的服务类型实例
-            using var scope = Common.GetServiceScope();
-            Service = scope.ServiceProvider.GetService<Tobj>();
+            Service = servicePorivder.GetService<Tobj>();
             if (CachedAttr == null)
                 return MethodFunCall(Service, args);
-            L1 = scope.ServiceProvider.GetService<IL1CacheServiceFactory>();
-            L2 = scope.ServiceProvider.GetService<IL2CacheServiceFactory>();
+            L1 = servicePorivder.GetService<IL1CacheServiceFactory>();
+            L2 = servicePorivder.GetService<IL2CacheServiceFactory>();
             //调用缓存
             var realResult = new TaskCompletionSource<Tout>();
             if (CachedAttr.SyncVisit)

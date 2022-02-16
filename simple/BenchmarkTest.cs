@@ -6,6 +6,8 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Validators;
+using Infrastructure.EfDataAccess;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Oxygen.MulitlevelCache;
 using System;
@@ -32,7 +34,6 @@ namespace AppSimple
             var test = new TestContext();
             test.Setup();
             test.UseCache();
-            await test.UseAsyncCache();
         }
     }
     public class TestContext
@@ -42,10 +43,10 @@ namespace AppSimple
         public void Setup()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddScoped<IUserService, UserService>();
             serviceCollection.AddScoped<IArticleService, ArticleService>();
             serviceCollection.AddMemoryCache();
             serviceCollection.InjectionCached<L1Cache, L2Cache>();
+            serviceCollection.AddDbContext<EfDbContext>(options => options.UseNpgsql("User ID=postgres;Password=Mytestpwd#123;Host=192.168.1.253;Port=32508;Database=UserDb;Pooling=true;"));
             serviceProvider = serviceCollection.BuildServiceProvider();
             Common.SetServiceProvider(serviceProvider);
             _ = cSRedisClientImpl.cSRedisClient.Value;
@@ -54,29 +55,19 @@ namespace AppSimple
         public void DirectCallWithNoCache()
         {
             using var scope = serviceProvider.CreateScope();
-            scope.ServiceProvider.GetService<UserService>().GetUserName(1);
+            scope.ServiceProvider.GetService<IArticleService>().GetAllArticle();
         }
 
         [Benchmark]
         public async Task AsyncDirectCallWithNoCache()
         {
             using var scope = serviceProvider.CreateScope();
-            await scope.ServiceProvider.GetService<UserService>().GetUserNameAsync(1);
+            await scope.ServiceProvider.GetService<IArticleService>().GetAllArticleAsync();
         }
-        [Benchmark]
         public void UseCache()
         {
             using var scope = serviceProvider.CreateScope();
-            var name = scope.ServiceProvider.GetService<IUserService>().GetUserName(1);
-            var article = scope.ServiceProvider.GetService<IArticleService>().GetUserArticleTitle(name);
-        }
-
-        [Benchmark]
-        public async Task UseAsyncCache()
-        {
-            using var scope = serviceProvider.CreateScope();
-            var name = await scope.ServiceProvider.GetService<IUserService>().GetUserNameAsync(1);
-            var article =await scope.ServiceProvider.GetService<IArticleService>().GetUserArticleTitleAsync(name);
+            var article = scope.ServiceProvider.GetService<IArticleService>().GetArticleById(new Article() { Id = 1 });
         }
     }
 }

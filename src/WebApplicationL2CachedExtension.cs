@@ -11,7 +11,6 @@ namespace Oxygen.MulitlevelCache
             //注入多级缓存实现
             services.AddSingleton<IL1CacheServiceFactory, L1Cache>();
             services.AddSingleton<IL2CacheServiceFactory, L2Cache>();
-            services.AddHostedService<CachedHostedService>();
             //为所有注解方法的类型注入代理
             Common.GetSystemCachedAttributeService().ForEach(x =>
             {
@@ -28,7 +27,10 @@ namespace Oxygen.MulitlevelCache
                 services.AddScoped(x.tImpl);
                 //为接口注入代理
                 var proxy = Common.DispatchProxyCreate(x.tInterface, x.tImpl);
-                services.AddScoped(x.tInterface, y => proxy);
+                services.AddScoped(x.tInterface, y => {
+                    Common.SetServiceProvider(y);
+                    return proxy;
+                });
             });
         }
     }

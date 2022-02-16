@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyModel;
+﻿using Microsoft.Extensions.DependencyModel;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Security.Cryptography;
@@ -11,18 +10,19 @@ namespace Oxygen.MulitlevelCache
     {
         static Dictionary<MethodInfo, SystemCachedAttribute> systemCachedAttrDir = new Dictionary<MethodInfo, SystemCachedAttribute>();
         static Lazy<IEnumerable<Assembly>> Assemblies = new Lazy<IEnumerable<Assembly>>(() => DependencyContext.Default.CompileLibraries.Where(lib => !lib.Serviceable && lib.Type != "package" && lib.Type != "referenceassembly").Select(lib => AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(lib.Name))));
-        static IServiceProvider ServiceProvider { get; set; }
-        internal static IServiceScope GetServiceScope()
+        static AsyncLocal<IServiceProvider> ServiceProvider { get; set; } = new AsyncLocal<IServiceProvider>();
+        internal static IServiceProvider GetServiceProvider()
         {
             if (ServiceProvider == null)
                 throw new ArgumentNullException("ServiceProvider没有被实例化");
-            return ServiceProvider.CreateScope();
+            return ServiceProvider.Value;
         }
+
         internal static void SetCachedAttrDir(MethodInfo method, SystemCachedAttribute attr) => systemCachedAttrDir.Add(method, attr);
         internal static SystemCachedAttribute GetCachedAttrDir(MethodInfo method) => systemCachedAttrDir.ContainsKey(method) ? systemCachedAttrDir[method] : default;
         public static void SetServiceProvider(IServiceProvider serviceProvider)
         {
-            ServiceProvider = serviceProvider;
+            ServiceProvider.Value = serviceProvider;
         }
         /// <summary>
         /// 将包含SystemCachedAttribute服务注册成为代理
