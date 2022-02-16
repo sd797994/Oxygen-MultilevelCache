@@ -13,7 +13,7 @@ namespace Oxygen.MulitlevelCache
         /// 创建方法委托实例
         /// </summary>
         /// <param name="methodInfo"></param>
-        public static void CreateDelegate(MethodInfo? methodInfo)
+        public static void CreateDelegate(MethodInfo methodInfo)
         {
             DelegateDir.Add(Common.GetCachedKey(methodInfo), BuildSenderDelegate(methodInfo));
             IMethodDelegate BuildSenderDelegate(MethodInfo methodInfo)
@@ -28,7 +28,7 @@ namespace Oxygen.MulitlevelCache
         /// <param name="methodInfo"></param>
         /// <returns></returns>
         /// <exception cref="NullReferenceException"></exception>
-        public static IMethodDelegate GetDelegate(MethodInfo? methodInfo)
+        public static IMethodDelegate GetDelegate(MethodInfo methodInfo)
         {
             var key = Common.GetCachedKey(methodInfo);
             return DelegateDir.ContainsKey(key) ? DelegateDir[key] : throw new NullReferenceException();
@@ -40,10 +40,10 @@ namespace Oxygen.MulitlevelCache
         /// <typeparam name="Tout"></typeparam>
         /// <param name="method"></param>
         /// <returns></returns>
-        public static Func<TObj, object?[]?, Tout> CreateMethodDelegate<TObj, Tout>(MethodInfo method)
+        public static Func<TObj, object[], Tout> CreateMethodDelegate<TObj, Tout>(MethodInfo method)
         {
             var exp = CreateLambda(method);
-            return Expression.Lambda<Func<TObj, object?[]?, Tout>>(exp.body, exp.parameters).Compile();
+            return Expression.Lambda<Func<TObj, object[], Tout>>(exp.body, exp.parameters).Compile();
             (Expression body, ParameterExpression[] parameters) CreateLambda(MethodInfo methodInfo)
             {
                 var mParameter = Expression.Parameter(methodInfo.ReflectedType, "m");

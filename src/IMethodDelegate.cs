@@ -2,6 +2,6 @@
 {
     internal interface IMethodDelegate
     {
-        object? Excute(object?[]? args);
+        object Excute(object[] args);
     }
 }

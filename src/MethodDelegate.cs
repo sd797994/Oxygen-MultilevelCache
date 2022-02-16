@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace Oxygen.MulitlevelCache
 {
@@ -11,7 +12,7 @@ namespace Oxygen.MulitlevelCache
         private Tobj Service;
         private readonly MethodInfo Method;
         private readonly bool IsTaskMethod = false;
-        private readonly Func<Tobj, object?[]?, Tout> MethodFunCall;
+        private readonly Func<Tobj, object[], Tout> MethodFunCall;
         private string CacheKey { get; set; }
         private SystemCachedAttribute CachedAttr { get; set; }
         public MethodDelegate(MethodInfo method)
@@ -23,7 +24,7 @@ namespace Oxygen.MulitlevelCache
             CachedAttr = Common.GetCachedAttrDir(method);
 
         }
-        TaskTOut? TryGetCache(MethodInfo methodInfo, object?[]? args)
+        TaskTOut TryGetCache(MethodInfo methodInfo, object[] args)
         {
             //如果没有配置或者配置ttl设置为0
             if (CachedAttr == null || CachedAttr.ExpireSecond == 0)
@@ -52,17 +53,11 @@ namespace Oxygen.MulitlevelCache
                             autoCacheResetEvent.Set();
                         }
                     });
-                    //如果设置了超时等待，则等待超时后取消任务并阻止中断器
-                    if (CachedAttr.TimeOutMillisecond > 0)
-                        Task.Delay(CachedAttr.TimeOutMillisecond).ContinueWith(t =>
-                        {
-                            autoCacheResetEvent.Set();
-                            cancelSource.Cancel();
-                            if (!task.IsCompleted)
-                                realResult.SetResult(default);
-                        });
                     //中断器开始中断当前线程并监听阻止信号
-                    autoCacheResetEvent.WaitOne();
+                    if (CachedAttr.TimeOutMillisecond > 0)
+                        autoCacheResetEvent.WaitOne(CachedAttr.TimeOutMillisecond);
+                    else
+                        autoCacheResetEvent.WaitOne();
                     cacheResult = realResult.Task.Result;
                     if (cacheResult == null)
                         return default;
@@ -94,10 +89,15 @@ namespace Oxygen.MulitlevelCache
                 }
             }
         }
-        public object? Excute(object?[]? args)
+        public object Excute(object[] args)
         {
             //注入需要的构造函数和需要调用的服务类型实例
-            LoadCacheSerivice();
+            using var scope = Common.GetServiceScope();
+            Service = scope.ServiceProvider.GetService<Tobj>();
+            if (CachedAttr == null)
+                return MethodFunCall(Service, args);
+            L1 = scope.ServiceProvider.GetService<IL1CacheServiceFactory>();
+            L2 = scope.ServiceProvider.GetService<IL2CacheServiceFactory>();
             //调用缓存
             var realResult = new TaskCompletionSource<Tout>();
             if (CachedAttr.SyncVisit)
@@ -141,12 +141,6 @@ namespace Oxygen.MulitlevelCache
                     return task;
                 }
             }
-        }
-        void LoadCacheSerivice()
-        {
-            L1 = Common.GetService<IL1CacheServiceFactory>();
-            L2 = Common.GetService<IL2CacheServiceFactory>();
-            Service = Common.GetService<Tobj>();
         }
     }
 }
