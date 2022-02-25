@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ namespace Infrastructure.EfDataAccess
             Console.WriteLine($"ef上下文被销毁，上下文ID：{this.ContextId}");
             await base.DisposeAsync();
         }
-        public DbSet<Article> Article { get; set; }
+        public DbSet<Account> Account { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,10 +35,25 @@ namespace Infrastructure.EfDataAccess
             base.OnModelCreating(modelBuilder);
         }
     }
-    public class Article
+    public class Account
     {
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public string Content { get; set; }
+        [Key]
+        public Guid Id { get; set; }
+        /// <summary>
+        /// 账号
+        /// </summary>
+        public string LoginName { get; set; }
+        /// <summary>
+        /// 密码
+        /// </summary>
+        public string Password { get; set; }
+        /// <summary>
+        /// 昵称
+        /// </summary>
+        public string NickName { get; set; }
+        /// <summary>
+        /// 账户状态
+        /// </summary>
+        public int State { get; set; }
     }
 }

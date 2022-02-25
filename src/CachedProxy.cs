@@ -2,7 +2,7 @@
 
 namespace Oxygen.MulitlevelCache
 {
-    internal class CachedProxy<Timpl> : DispatchProxy
+    public class CachedProxy<Timpl> : DispatchProxy
     {
         protected override object Invoke(MethodInfo targetMethod, object[] args)
         {

@@ -15,7 +15,7 @@ namespace AppSimple
             builder.Services.AddScoped<IArticleService, ArticleService>();
             builder.Services.AddMemoryCache();
             builder.Services.InjectionCached<L1Cache, L2Cache>();
-            builder.Services.AddDbContext<EfDbContext>(options => options.UseNpgsql("User ID=postgres;Password=Mytestpwd#123;Host=192.168.1.253;Port=32508;Database=UserDb;Pooling=true;"));
+            builder.Services.AddDbContext<EfDbContext>(options => options.UseNpgsql("User ID=postgres;Password=Mytestpwd#123;Host=192.168.1.253;Port=30432;Database=AccountDb;Pooling=true;"));
             builder.Services.AddControllers();
             var app = builder.Build();
             app.UseRouting();
@@ -31,9 +31,9 @@ namespace AppSimple
         {
             this.articleService = articleService;
         }
-        public async Task<Article> Index()
+        public async Task<Account> Index()
         {
-            return await articleService.GetArticleByIdAsync(new Article() { Id = 1 });
+            return await articleService.GetArticleByIdAsync(new Account() { Id = Guid.Empty });
         }
     }
 }

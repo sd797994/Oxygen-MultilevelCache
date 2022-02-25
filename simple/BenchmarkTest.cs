@@ -67,7 +67,7 @@ namespace AppSimple
         public void UseCache()
         {
             using var scope = serviceProvider.CreateScope();
-            var article = scope.ServiceProvider.GetService<IArticleService>().GetArticleById(new Article() { Id = 1 });
+            var article = scope.ServiceProvider.GetService<IArticleService>().GetArticleById(new Account() { Id = Guid.Empty });
         }
     }
 }

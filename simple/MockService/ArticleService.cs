@@ -17,48 +17,48 @@ namespace AppSimple.MockService
             this.efDbContext = efDbContext;
         }
 
-        public List<Article> GetAllArticle()
+        public List<Account> GetAllArticle()
         {
 
-            return efDbContext.Article.ToList();
+            return efDbContext.Account.ToList();
         }
 
-        public async Task<List<Article>> GetAllArticleAsync()
+        public async Task<List<Account>> GetAllArticleAsync()
         {
-            return await efDbContext.Article.ToListAsync();
+            return await efDbContext.Account.ToListAsync();
         }
 
-        public Article GetArticleById(Article article)
+        public Account GetArticleById(Account article)
         {
-            return efDbContext.Article.FirstOrDefault(x => x.Id == article.Id);
+            return efDbContext.Account.FirstOrDefault(x => x.Id == article.Id);
         }
 
-        public async Task<Article> GetArticleByIdAsync(Article article)
+        public async Task<Account> GetArticleByIdAsync(Account article)
         {
-            return await efDbContext.Article.FirstOrDefaultAsync(x => x.Id == article.Id);
+            return await efDbContext.Account.FirstOrDefaultAsync(x => x.Id == article.Id);
         }
         [SystemCached]
-        public List<Article> GetCacheAllArticle()
+        public List<Account> GetCacheAllArticle()
         {
-            return efDbContext.Article.ToList();
-        }
-
-        [SystemCached]
-        public async Task<List<Article>> GetCacheAllArticleAsync()
-        {
-            return await efDbContext.Article.ToListAsync();
+            return efDbContext.Account.ToList();
         }
 
         [SystemCached]
-        public Article GetCacheArticleById(Article article)
+        public async Task<List<Account>> GetCacheAllArticleAsync()
         {
-            return efDbContext.Article.FirstOrDefault(x => x.Id == article.Id);
+            return await efDbContext.Account.ToListAsync();
         }
 
         [SystemCached]
-        public async Task<Article> GetCacheArticleByIdAsync(Article article)
+        public Account GetCacheArticleById(Account article)
         {
-            return await efDbContext.Article.FirstOrDefaultAsync(x => x.Id == article.Id);
+            return efDbContext.Account.FirstOrDefault(x => x.Id == article.Id);
+        }
+
+        [SystemCached]
+        public async Task<Account> GetCacheArticleByIdAsync(Account article)
+        {
+            return await efDbContext.Account.FirstOrDefaultAsync(x => x.Id == article.Id);
         }
     }
 }
