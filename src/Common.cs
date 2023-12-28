@@ -37,8 +37,10 @@ namespace Oxygen.MulitlevelCache
 
         internal static object DispatchProxyCreate(Type interfaceType, Type implType)
         {
-            return typeof(DispatchProxy).GetMethod(nameof(DispatchProxy.Create)).MakeGenericMethod(new[] { interfaceType, typeof(CachedProxy<>).MakeGenericType(implType) }).Invoke(null, null);
+            var createMethod = typeof(DispatchProxy).GetMethod(nameof(DispatchProxy.Create), BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(Type), typeof(Type) }, null);
+            return createMethod.MakeGenericMethod(new[] { interfaceType, typeof(CachedProxy<>).MakeGenericType(implType) }).Invoke(null, null);
         }
+
 
         internal static string GetCachedKey(MethodInfo methodInfo)
         {
