@@ -34,11 +34,9 @@ namespace Oxygen.MulitlevelCache
             return allTypes.Where(x => x.IsClass && x.GetInterfaces().Any() && x.GetMethods().Any(m => m.GetCustomAttribute<SystemCachedAttribute>() != null))
                 .Select(x => (x.GetInterfaces().FirstOrDefault(), x)).ToList();
         }
-
         internal static object DispatchProxyCreate(Type interfaceType, Type implType)
         {
-            var createMethod = typeof(DispatchProxy).GetMethod(nameof(DispatchProxy.Create), BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(Type), typeof(Type) }, null);
-            return createMethod.MakeGenericMethod(new[] { interfaceType, typeof(CachedProxy<>).MakeGenericType(implType) }).Invoke(null, null);
+            return typeof(DispatchProxy).GetMethod(nameof(DispatchProxy.Create), BindingFlags.Public | BindingFlags.Static, null, new Type[] { }, null).MakeGenericMethod(new[] { interfaceType, typeof(CachedProxy<>).MakeGenericType(implType) }).Invoke(null, null);
         }
 
 
